@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<TatukGIS>
+  <Viewer>
+    <IncrementalPaint>NO</IncrementalPaint>
+    <VisibleExtent>
+      <XMin>84.2142891831968</XMin>
+      <XMax>84.2245625452086</XMax>
+      <YMin>20.4891390258994</YMin>
+      <YMax>20.4957074727741</YMax>
+    </VisibleExtent>
+    <CS>
+      <EPSG>4326</EPSG>
+    </CS>
+  </Viewer>
+  <Layers>
+    <Layer Name="CONTOURS_1M" Path="CONTOURS_1M.shp">
+      <Sections>
+        <Section>
+          <Visible>YES</Visible>
+          <Ground>OnDem</Ground>
+          <Render>
+            <MinVal>0</MinVal>
+            <MaxVal>0</MaxVal>
+            <MinValEx>0</MinValEx>
+            <MaxValEx>0</MaxValEx>
+          </Render>
+          <Line>
+            <Width>SIZE:1 pt</Width>
+            <Color>ARGB:FF9BBB7F</Color>
+            <ShowLegend>YES</ShowLegend>
+          </Line>
+          <Label>
+            <Value>{ELEVATION}</Value>
+            <Color>ARGB:FFFF00FF</Color>
+          </Label>
+          <Active>YES</Active>
+          <Caption>CONTOURS_1M</Caption>
+          <CodePage>65001</CodePage>
+        </Section>
+      </Sections>
+    </Layer>
+    <Layer Name="DSM SUNDHISAHI_FINAL_0.1pix" Path="DSM SUNDHISAHI_FINAL_0.1pix.tif">
+      <Sections>
+        <Section>
+          <Visible>YES</Visible>
+          <Pixel>
+            <GridNoValue>-32767</GridNoValue>
+          </Pixel>
+          <Active>YES</Active>
+          <Caption>DSM SUNDHISAHI_FINAL_0.1pix</Caption>
+          <MinHeight>447.922058105469</MinHeight>
+          <MaxHeight>512.087158203125</MaxHeight>
+        </Section>
+      </Sections>
+    </Layer>
+    <Layer Name="DTM SUNDHISAHI_FINAL_0.1pix" Path="DTM SUNDHISAHI_FINAL_0.1pix.tif">
+      <Sections>
+        <Section>
+          <Visible>YES</Visible>
+          <Pixel>
+            <GridNoValue>-32767</GridNoValue>
+          </Pixel>
+          <Active>YES</Active>
+          <Caption>DTM SUNDHISAHI_FINAL_0.1pix</Caption>
+          <MinHeight>448.292053222656</MinHeight>
+          <MaxHeight>480.003295898438</MaxHeight>
+        </Section>
+      </Sections>
+    </Layer>
+    <Layer Name="ORTHO SUNDHISAHI_FINAL_0.1pix" Path="ORTHO SUNDHISAHI_FINAL_0.1pix.tif">
+      <Sections>
+        <Section>
+          <Visible>YES</Visible>
+          <Active>YES</Active>
+          <Caption>ORTHO SUNDHISAHI_FINAL_0.1pix</Caption>
+          <MinHeight>3.39999995214436E38</MinHeight>
+          <MaxHeight>-3.39999995214436E38</MaxHeight>
+        </Section>
+      </Sections>
+    </Layer>
+  </Layers>
+  <Hierarchy>
+    <Groups/>
+  </Hierarchy>
+  <EDT_VWR/>
+</TatukGIS>

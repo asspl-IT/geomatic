@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<TatukGIS>
+  <Viewer>
+    <IncrementalPaint>NO</IncrementalPaint>
+    <VisibleExtent>
+      <XMin>315348.129841922</XMin>
+      <XMax>320717.148232222</XMax>
+      <YMin>2423998.28088875</YMin>
+      <YMax>2427431.05314242</YMax>
+    </VisibleExtent>
+    <CS>
+      <EPSG>32645</EPSG>
+    </CS>
+  </Viewer>
+  <Layers>
+    <Layer Name="DGPS FOREST MAP NARAYANPOSHI" Path="DGPS FOREST MAP NARAYANPOSHI.jpg">
+      <Sections>
+        <Section>
+          <Visible>YES</Visible>
+          <Active>NO</Active>
+          <Caption>DGPS FOREST MAP NARAYANPOSHI</Caption>
+          <CodePage>1252</CodePage>
+          <CS>
+            <EPSG>32645</EPSG>
+          </CS>
+          <MinHeight>3.39999995214436E38</MinHeight>
+          <MaxHeight>-3.39999995214436E38</MaxHeight>
+        </Section>
+      </Sections>
+    </Layer>
+    <Layer Name="ARYAN MINING LAND USE MAP" Path="ARYAN MINING LAND USE MAP.jpg">
+      <Sections>
+        <Section>
+          <Visible>YES</Visible>
+          <Active>NO</Active>
+          <Caption>ARYAN MINING LAND USE MAP</Caption>
+          <CodePage>1252</CodePage>
+          <CS>
+            <EPSG>32645</EPSG>
+          </CS>
+          <MinHeight>3.39999995214436E38</MinHeight>
+          <MaxHeight>-3.39999995214436E38</MaxHeight>
+        </Section>
+      </Sections>
+    </Layer>
+    <Layer Name="Nposhi_utm" Path="Nposhi_utm.jpg">
+      <Sections>
+        <Section>
+          <Visible>YES</Visible>
+          <Active>NO</Active>
+          <Caption>Nposhi_utm</Caption>
+          <CodePage>1252</CodePage>
+          <CS>
+            <EPSG>32645</EPSG>
+          </CS>
+          <MinHeight>3.39999995214436E38</MinHeight>
+          <MaxHeight>-3.39999995214436E38</MaxHeight>
+        </Section>
+      </Sections>
+    </Layer>
+    <Layer Name="Kasira_Koida_JointVillage_Sheet" Path="Kasira_Koida_JointVillage_Sheet.jpg">
+      <Sections>
+        <Section>
+          <Visible>YES</Visible>
+          <Active>NO</Active>
+          <Caption>Kasira_Koida_JointVillage_Sheet</Caption>
+          <CodePage>1252</CodePage>
+          <CS>
+            <EPSG>32645</EPSG>
+          </CS>
+          <MinHeight>3.39999995214436E38</MinHeight>
+          <MaxHeight>-3.39999995214436E38</MaxHeight>
+        </Section>
+      </Sections>
+    </Layer>
+    <Layer Name="PATCH_BOUNDARY" Path="PATCH_BOUNDARY.shp">
+      <Sections>
+        <Section>
+          <Visible>NO</Visible>
+          <Ground>OnDem</Ground>
+          <Render>
+            <MinVal>0</MinVal>
+            <MaxVal>0</MaxVal>
+            <MinValEx>0</MinValEx>
+            <MaxValEx>0</MaxValEx>
+          </Render>
+          <Area>
+            <Color>ARGB:FFEFC3F6</Color>
+            <Pattern>STOCK:TRANSPARENT</Pattern>
+            <OutlineColor>ARGB:FF00FF00</OutlineColor>
+            <ShowLegend>YES</ShowLegend>
+          </Area>
+          <Label>
+            <Value>{REMARKS}</Value>
+            <FontSize>SIZE:10pt</FontSize>
+            <Font>
+              <Style>BOLD</Style>
+              <Color>ARGB:FF008000</Color>
+            </Font>
+            <Position>STOCK:MIDDLECENTER</Position>
+            <Color>ARGB:FFF5F5F5</Color>
+          </Label>
+          <Active>NO</Active>
+          <Caption>PATCH_BOUNDARY</Caption>
+        </Section>
+      </Sections>
+    </Layer>
+    <Layer Name="Landshedule_NP" Path="Landshedule_NP.shp">
+      <Sections>
+        <Section>
+          <Visible>NO</Visible>
+          <Ground>OnDem</Ground>
+          <Render>
+            <MinVal>0</MinVal>
+            <MaxVal>0</MaxVal>
+            <MinValEx>0</MinValEx>
+            <MaxValEx>0</MaxValEx>
+          </Render>
+          <Area>
+            <Color>ARGB:FFC9EFF7</Color>
+            <Pattern>STOCK:TRANSPARENT</Pattern>
+            <OutlineColor>ARGB:FFFF0000</OutlineColor>
+            <ShowLegend>YES</ShowLegend>
+          </Area>
+          <Label>
+            <Value>{Plot}</Value>
+            <FontSize>SIZE:10pt</FontSize>
+            <Font>
+              <Color>ARGB:FFFF0000</Color>
+            </Font>
+            <Position>STOCK:MIDDLECENTER</Position>
+            <Alignment>CENTER</Alignment>
+            <Color>ARGB:FFFFFFFF</Color>
+          </Label>
+          <Active>NO</Active>
+          <Caption>Landshedule_NP</Caption>
+        </Section>
+      </Sections>
+    </Layer>
+    <Layer Name="ARYAN_LUSE_STATISTICS_LayerT" Path="ARYAN_LUSE_STATISTICS_LayerT.kmz">
+      <Sections>
+        <Section>
+          <Visible>YES</Visible>
+          <Ground>AboveZero</Ground>
+          <Render>
+            <MinVal>0</MinVal>
+            <MaxVal>0</MaxVal>
+            <MinValEx>0</MinValEx>
+            <MaxValEx>0</MaxValEx>
+          </Render>
+          <Line>
+            <Width>SIZE:1 pt</Width>
+            <Color>ARGB:FF5E8CB4</Color>
+          </Line>
+          <Area>
+            <Color>ARGB:FFFFFFFF</Color>
+            <Pattern>STOCK:TRANSPARENT</Pattern>
+            <OutlineColor>ARGB:FFFFFFFF</OutlineColor>
+            <OutlinePattern>STOCK:TRANSPARENT</OutlinePattern>
+          </Area>
+          <Marker>
+            <Style>STOCK:CROSS</Style>
+            <Size>SIZE:8 pt</Size>
+            <Color>ARGB:FF9DD1FD</Color>
+            <Pattern>STOCK:TRANSPARENT</Pattern>
+            <OutlineWidth>SIZE:1 twips</OutlineWidth>
+            <OutlineColor>ARGB:FF000000</OutlineColor>
+            <ShowLegend>YES</ShowLegend>
+          </Marker>
+          <Active>NO</Active>
+          <Caption>ARYAN_LUSE_STATISTICS_LayerT</Caption>
+          <CodePage>1252</CodePage>
+        </Section>
+      </Sections>
+    </Layer>
+    <Layer Name="ARYN_LUSE_PATERN" Path="ARYN_LUSE_PATERN.shp">
+      <Sections>
+        <Section>
+          <Visible>YES</Visible>
+          <Ground>OnDem</Ground>
+          <Render>
+            <MinVal>0</MinVal>
+            <MaxVal>0</MaxVal>
+            <MinValEx>0</MinValEx>
+            <MaxValEx>0</MaxValEx>
+          </Render>
+          <Area>
+            <Color>ARGB:FFC9E6F0</Color>
+            <Pattern>STOCK:TRANSPARENT</Pattern>
+            <OutlineColor>ARGB:FF0000FF</OutlineColor>
+            <ShowLegend>YES</ShowLegend>
+          </Area>
+          <Label>
+            <Value>{SUB_CAT_1}</Value>
+            <FontSize>SIZE:8pt</FontSize>
+            <Font>
+              <Style>BOLD</Style>
+              <Color>ARGB:FF0000FF</Color>
+            </Font>
+            <Color>ARGB:FFF5F5F5</Color>
+          </Label>
+          <Active>YES</Active>
+          <Caption>ARYN_LUSE_PATERN</Caption>
+        </Section>
+      </Sections>
+    </Layer>
+  </Layers>
+  <Hierarchy>
+    <Groups>
+      <Group Name="Other" Caption="Other" Collapsed="False" Active="True">
+        <Layers>
+          <Layer Name="Landshedule_NP"/>
+          <Layer Name="PATCH_BOUNDARY"/>
+          <Layer Name="DGPS FOREST MAP NARAYANPOSHI"/>
+          <Layer Name="ARYAN MINING LAND USE MAP"/>
+          <Layer Name="Nposhi_utm"/>
+          <Layer Name="Kasira_Koida_JointVillage_Sheet"/>
+          <Layer Name="ARYN_LUSE_PATERN"/>
+        </Layers>
+      </Group>
+    </Groups>
+  </Hierarchy>
+  <EDT_VWR/>
+</TatukGIS>

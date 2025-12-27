@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<TatukGIS>
+  <Viewer>
+    <IncrementalPaint>NO</IncrementalPaint>
+    <VisibleExtent>
+      <XMin>209417.370421612</XMin>
+      <XMax>210841.723605778</XMax>
+      <YMin>2267973.816013</YMin>
+      <YMax>2268758.91171008</YMax>
+    </VisibleExtent>
+    <CS>
+      <EPSG>32645</EPSG>
+    </CS>
+  </Viewer>
+  <Layers>
+    <Layer Name="DTM SUNDHISAHI_FINAL_0.1pix" Path="DTM SUNDHISAHI_FINAL_0.1pix.tif">
+      <Sections>
+        <Section>
+          <Visible>YES</Visible>
+          <Pixel>
+            <GridNoValue>-32767</GridNoValue>
+          </Pixel>
+          <Active>YES</Active>
+          <Caption>DTM SUNDHISAHI_FINAL_0.1pix</Caption>
+          <MinHeight>448.292053222656</MinHeight>
+          <MaxHeight>480.003295898438</MaxHeight>
+        </Section>
+      </Sections>
+    </Layer>
+  </Layers>
+  <EDT_VWR/>
+  <Hierarchy>
+    <Groups/>
+  </Hierarchy>
+</TatukGIS>
