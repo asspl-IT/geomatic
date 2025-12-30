@@ -1,0 +1,139 @@
+/* sidebar.css - minimal reset + look */
+
+.left-nav {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 48px;
+  background: #0f1724;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 8px 6px;
+  z-index: 1200;
+}
+
+.nav-icon {
+  width: 36px;
+  height: 36px;
+  margin: 6px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.nav-icon:hover {
+  background: rgba(255,255,255,0.06);
+}
+
+.nav-top { margin-top: 8px; }
+.nav-bottom { margin-bottom: 8px; }
+
+.layer-panel {
+  position: absolute;
+  top: 40px;
+  left: 56px; /* next to left-nav */
+  width: 300px;
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  z-index: 1205;
+  overflow: hidden;
+  font-family: "Segoe UI", Roboto, sans-serif;
+}
+
+.layer-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.layer-panel-body {
+  padding: 12px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+}
+
+.category-card {
+  padding: 10px;
+  margin-bottom: 10px;
+  background: #fafafa;
+  border-radius: 6px;
+  border: 1px solid #eee;
+}
+
+.category-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cat-icon {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border-radius: 4px;
+  border: 1px solid #e0e0e0;
+  font-size: 14px;
+}
+
+.layer-item {
+  padding: 6px 0;
+  font-size: 13px;
+}
+
+.mini-btn {
+  background: transparent;
+  border: none;
+  color: #c62828;
+  cursor: pointer;
+  padding: 3px 6px;
+  border-radius: 4px;
+}
+
+.map-tools {
+  position: absolute;
+  top: 40px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 1210;
+}
+
+.map-tool-btn {
+  width: 44px;
+  height: 44px;
+  background: #e53935;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 20px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+.map-tool-btn:hover { filter: brightness(0.95); }
+
+.coords-bar {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255,255,255,0.95);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  z-index: 1210;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+}
