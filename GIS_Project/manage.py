@@ -3,6 +3,7 @@
 import os
 import sys
 
+os.environ["PROJ_LIB"] = r"C:\OSGeo4W_1\share\proj"
 
 def main():
     """Run administrative tasks."""

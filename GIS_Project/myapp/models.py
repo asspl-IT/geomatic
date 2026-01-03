@@ -1,18 +1,38 @@
-from django.db import models
+from django.contrib.gis.db import models
+from django.contrib.auth.models import User
+
 
 class Project(models.Model):
+    STATUS_PENDING = "pending"
+    STATUS_PROCESSING = "processing"
+    STATUS_READY = "ready"
+    STATUS_FAILED = "failed"
+
+    STATUS_CHOICES = [
+        (STATUS_PENDING, "Pending"),
+        (STATUS_PROCESSING, "Processing"),
+        (STATUS_READY, "Ready"),
+        (STATUS_FAILED, "Failed"),
+    ]
+
     name = models.CharField(max_length=255)
-    ttk_path = models.FileField(upload_to='projects/ttk/')
+    description = models.TextField(blank=True)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    crs = models.CharField(max_length=64, null=True, blank=True)
+    status = models.CharField(
+        max_length=16, choices=STATUS_CHOICES, default=STATUS_PENDING
+    )
+    error_message = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+
 class Layer(models.Model):
-    project = models.ForeignKey(Project, related_name='layers', on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
-    layer_type = models.CharField(max_length=20, choices=(('vector','vector'),('raster','raster')))
-    source_path = models.CharField(max_length=1024)  # original path from .ttkproject or uploaded
-    web_geojson = models.CharField(max_length=1024, blank=True, null=True)  # path to generated geojson
-    tile_folder = models.CharField(max_length=1024, blank=True, null=True)   # for raster tiles
-    style = models.JSONField(default=dict, blank=True)  # symbology
-    visible = models.BooleanField(default=True)
-    order = models.IntegerField(default=0)
-    created_at = models.DateTimeField(auto_now_add=True)
+    layer_type = models.CharField(max_length=16)  
+    source_format = models.CharField(max_length=32)   
+    storage_type = models.CharField(max_length=32)    
+    table_name = models.CharField(max_length=255, null=True, blank=True)
+    file_path = models.TextField(null=True, blank=True)
+    bbox = models.JSONField(null=True, blank=True)
+    feature_count = models.IntegerField(null=True, blank=True)

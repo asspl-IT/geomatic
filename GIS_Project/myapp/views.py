@@ -1,271 +1,223 @@
 import os
 import zipfile
 
-from rest_framework.decorators import api_view, parser_classes
+from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.permissions import IsAdminUser, AllowAny
 from rest_framework.response import Response
+
 from django.conf import settings
+from django.shortcuts import get_object_or_404
 
-from .services.project_service import ProjectService
-from .converters.ttk_converter import parse_ttkproject
-from .converters.raster_converter import convert_raster_to_tiles
+from myapp.models import Project, Layer
+from myapp.services.ingest_service import ingest_uploaded_file
+from myapp.parsers.ttk_parser import parse_ttkproject
+from myapp.services.preview_service import (
+    fetch_geojson_from_table,
+    raster_preview,
+    las_preview,
+)
 
-# optional
-try:
-    import laspy
-    LAS_SUPPORTED = True
-except ImportError:
-    LAS_SUPPORTED = False
+# ============================================================
+# HELPERS
+# ============================================================
 
+def api_error(message, status=400):
+    return Response({"error": message}, status=status)
+
+
+# ============================================================
+# ADMIN UPLOAD + PREVIEW (WRITE API)
+# ============================================================
 
 @api_view(["POST"])
+@permission_classes([IsAdminUser])
 @parser_classes([MultiPartParser, FormParser])
-def upload_gis_project(request):
+def admin_upload_project(request):
+    upload = request.FILES.get("file")
+    name = request.data.get("name")
 
-    file = request.FILES.get("file")
-    if not file:
-        return Response({"error": "No file uploaded"}, status=400)
+    if not upload or not name:
+        return api_error("file and name required", 400)
 
-    upload_dir = os.path.join(settings.MEDIA_ROOT, "geo_projects")
+    project = Project.objects.create(
+        name=name,
+        owner=request.user,
+        status=Project.STATUS_PROCESSING,
+    )
+
+    upload_dir = os.path.join(settings.MEDIA_ROOT, "uploads", str(project.id))
     os.makedirs(upload_dir, exist_ok=True)
 
-    file_path = os.path.join(upload_dir, file.name)
-
-    # --------------------------------------------------
-    # Save uploaded file
-    # --------------------------------------------------
+    file_path = os.path.join(upload_dir, upload.name)
     with open(file_path, "wb+") as f:
-        for chunk in file.chunks():
+        for chunk in upload.chunks():
             f.write(chunk)
 
-    ext = os.path.splitext(file.name)[1].lower()
+    ext = os.path.splitext(upload.name)[1].lower()
+    preview = None
 
-    # --------------------------------------------------
-    # Reject MXD explicitly
-    # --------------------------------------------------
-    if ext == ".mxd":
-        return Response(
-            {
-                "error": (
-                    "MXD (ArcMap) projects are not supported. "
-                    "Please convert MXD to QGIS (.qgs) or GeoPackage (.gpkg)."
-                )
-            },
-            status=400
-        )
-
-    # --------------------------------------------------
-    # Handle ZIP (SHP / QGIS / JPG+JGW / Raster)
-    # --------------------------------------------------
-    if ext == ".zip":
-        extract_dir = os.path.join(upload_dir, os.path.splitext(file.name)[0])
-        os.makedirs(extract_dir, exist_ok=True)
-
-        with zipfile.ZipFile(file_path, "r") as zip_ref:
-            zip_ref.extractall(extract_dir)
-
-        extracted_file = None
-
-        for root, _, files in os.walk(extract_dir):
-            for fname in files:
-                lname = fname.lower()
-
-                # priority order
-                if lname.endswith(".shp"):
-                    extracted_file = os.path.join(root, fname)
-                    break
-
-                if lname.endswith(".qgs"):
-                    extracted_file = os.path.join(root, fname)
-                    break
-
-                if lname.endswith((".tif", ".tiff")):
-                    extracted_file = os.path.join(root, fname)
-                    break
-
-                if lname.endswith((".jpg", ".jpeg")):
-                    extracted_file = os.path.join(root, fname)
-                    break
-
-            if extracted_file:
-                break
-
-        if not extracted_file:
-            return Response(
-                {
-                    "error": (
-                        "ZIP must contain one of the following: "
-                        ".shp, .qgs, .tif, .jpg (+ .jgw)"
-                    )
-                },
-                status=400
-            )
-
-        file_path = extracted_file
-        ext = os.path.splitext(file_path)[1].lower()
-
-
-    # --------------------------------------------------
-    # Handle LAS / LAZ
-    # --------------------------------------------------
-    if ext in (".las", ".laz"):
-        if not LAS_SUPPORTED:
-            return Response(
-                {"error": "LAS/LAZ support not installed (laspy missing)"},
-                status=400
-            )
-
-        try:
-            las = laspy.read(file_path)
-            header = las.header
-
-            # CRS is OPTIONAL in LAS
-            try:
-                crs_obj = header.parse_crs()
-                crs = crs_obj.to_string() if crs_obj else None
-            except Exception:
-                crs = None
-
-            return Response({
-                "file": file.name,
-                "project_type": "lidar",
-                "coordinate_system": crs,
-                "layers": [
-                    {
-                        "name": os.path.splitext(file.name)[0],
-                        "type": "pointcloud",
-                        "points": header.point_count,
-                        "bounds": {
-                            "xmin": header.mins[0],
-                            "ymin": header.mins[1],
-                            "zmin": header.mins[2],
-                            "xmax": header.maxs[0],
-                            "ymax": header.maxs[1],
-                            "zmax": header.maxs[2],
-                        },
-                        "children": []
-                    }
-                ]
-            })
-
-        except Exception as e:
-            return Response(
-                {"error": f"Failed to read LAS file: {str(e)}"},
-                status=400
-            )
-
-
-    # --------------------------------------------------
-    # Handle TTK separately (legacy compatibility)
-    # --------------------------------------------------
-    if ext == ".ttkproject":
-        project_data = parse_ttkproject(file_path)
-        return Response({
-            "file": file.name,
-            **project_data
-        })
-    
-    # --------------------------------------------------
-    # JPG or JPEG and JGW handling (FIXED)
-    # --------------------------------------------------
-    if ext in (".jpg", ".jpeg"):
-        base = os.path.splitext(os.path.basename(file_path))[0]
-        base_dir = os.path.dirname(file_path)
-
-        jgw_path = os.path.join(base_dir, base + ".jgw")
-        prj_path = os.path.join(base_dir, base + ".prj")
-
-        if not os.path.exists(jgw_path):
-            return Response(
-                {
-                    "error": (
-                        "Georeferenced JPG requires a .jgw world file. "
-                        "Upload JPG + JGW together (preferably zipped)."
-                    )
-                },
-                status=400
-            )
-
-        try:
-            import rasterio
-
-            with rasterio.open(file_path) as ds:
-                crs = ds.crs.to_string() if ds.crs else None
-                bounds = ds.bounds
-
-            return Response({
-                "file": os.path.basename(file_path),
-                "project_type": "raster",
-                "coordinate_system": crs,
-                "layers": [
-                    {
-                        "name": base,
-                        "type": "raster",
-                        "format": "jpg+jgw",
-                        "bounds": {
-                            "xmin": bounds.left,
-                            "ymin": bounds.bottom,
-                            "xmax": bounds.right,
-                            "ymax": bounds.top,
-                        },
-                        "children": []
-                    }
-                ]
-            })
-
-        except Exception as e:
-            return Response(
-                {"error": f"Failed to read georeferenced JPG: {str(e)}"},
-                status=400
-            )
-
-    # --------------------------------------------------
-    # Handle GeoJSON
-    # --------------------------------------------------
-    if ext in (".geojson", ".json"):
-        try:
-            import geopandas as gpd
-
-            gdf = gpd.read_file(file_path)
-
-            # CRS handling
-            crs = gdf.crs.srs if gdf.crs else "EPSG:4326"
-
-            # Geometry type summary
-            geom_types = gdf.geom_type.unique().tolist()
-
-            return Response({
-                "file": os.path.basename(file_path),
-                "project_type": "vector",
-                "coordinate_system": crs,
-                "layers": [
-                    {
-                        "name": os.path.splitext(os.path.basename(file_path))[0],
-                        "type": "vector",
-                        "format": "geojson",
-                        "geometry_types": geom_types,
-                        "feature_count": len(gdf),
-                        "children": []
-                    }
-                ]
-            })
-
-        except Exception as e:
-            return Response(
-                {"error": f"Failed to read GeoJSON: {str(e)}"},
-                status=400
-            )
-
-
-    # --------------------------------------------------
-    # ALL OTHER GIS FORMATS
-    # --------------------------------------------------
     try:
-        project_data = ProjectService.fetch_project(file_path)
+        # ==================================================
+        # ZIP HANDLING
+        # ==================================================
+        if ext == ".zip":
+            extract_dir = os.path.join(upload_dir, "extracted")
+            os.makedirs(extract_dir, exist_ok=True)
+
+            with zipfile.ZipFile(file_path) as z:
+                z.extractall(extract_dir)
+
+            shp = jpg = jgw = None
+
+            for root, _, files in os.walk(extract_dir):
+                for fname in files:
+                    lf = fname.lower()
+                    full = os.path.join(root, fname)
+
+                    if lf.endswith(".shp"):
+                        shp = full
+                    elif lf.endswith((".jpg", ".jpeg")):
+                        jpg = full
+                    elif lf.endswith(".jgw"):
+                        jgw = full
+
+            if shp:
+                result = ingest_uploaded_file(shp, project)
+
+                layer = Layer.objects.create(
+                    project=project,
+                    name=os.path.basename(shp),
+                    layer_type="vector",
+                    source_format="shp",
+                    storage_type="postgis",
+                    table_name=result["table_name"],
+                    bbox=result["meta"].get("bbox"),
+                    feature_count=result["meta"].get("feature_count"),
+                )
+
+                preview = fetch_geojson_from_table(layer.table_name, 500)
+
+            elif jpg and jgw:
+                result = ingest_uploaded_file(jpg, project)
+
+                layer = Layer.objects.create(
+                    project=project,
+                    name=os.path.basename(jpg),
+                    layer_type="raster",
+                    source_format="jpg",
+                    storage_type="cog",
+                    file_path=result["file_path"],
+                    bbox=result["meta"].get("bbox"),
+                )
+
+                preview = raster_preview(result["file_path"])
+
+            else:
+                raise ValueError("ZIP does not contain supported GIS data")
+
+        # ==================================================
+        # SINGLE FILE INGEST
+        # ==================================================
+        else:
+            result = ingest_uploaded_file(file_path, project)
+
+            layer = Layer.objects.create(
+                project=project,
+                name=upload.name,
+                layer_type=result["layer_type"],
+                source_format=ext.replace(".", ""),
+                storage_type=result["storage_type"],
+                table_name=result.get("table_name"),
+                file_path=result.get("file_path"),
+                bbox=result["meta"].get("bbox"),
+                feature_count=result["meta"].get("feature_count"),
+            )
+
+            if layer.layer_type == "vector":
+                preview = fetch_geojson_from_table(layer.table_name, 500)
+            elif layer.layer_type == "raster":
+                preview = raster_preview(layer.file_path)
+            elif layer.layer_type == "lidar":
+                preview = result["meta"]
+
+        project.status = Project.STATUS_READY
+        project.save()
+
+        return Response({
+            "project_id": project.id,
+            "status": project.status,
+            "preview": preview
+        })
+
     except Exception as e:
-        return Response({"error": str(e)}, status=400)
+        project.status = Project.STATUS_FAILED
+        project.error_message = str(e)
+        project.save()
+        return api_error(str(e), 500)
+
+# ============================================================
+# VIEWER APIs (READ-ONLY)
+# ============================================================
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def list_projects(request):
+    projects = Project.objects.filter(status=Project.STATUS_READY)
+
+    return Response([
+        {
+            "id": p.id,
+            "name": p.name,
+            "crs": p.crs,
+            "created_at": p.created_at,
+        }
+        for p in projects
+    ])
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def project_layers(request, project_id):
+    layers = Layer.objects.filter(project_id=project_id)
+
+    return Response([
+        {
+            "id": l.id,
+            "name": l.name,
+            "type": l.layer_type,
+            "storage": l.storage_type,
+            "feature_count": l.feature_count,
+            "bbox": l.bbox,
+        }
+        for l in layers
+    ])
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def vector_layer_geojson(request, layer_id):
+    layer = get_object_or_404(Layer, id=layer_id)
+
+    if layer.layer_type != "vector":
+        return api_error("Not a vector layer", 400)
+
+    geojson = fetch_geojson_from_table(
+        layer.table_name,
+        limit=5000
+    )
+    return Response(geojson)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def raster_layer_info(request, layer_id):
+    layer = get_object_or_404(Layer, id=layer_id)
+
+    if layer.layer_type != "raster":
+        return api_error("Not a raster layer", 400)
 
     return Response({
-        "file": file.name,
-        **project_data
+        "type": "raster",
+        "tile_url": f"/api/tiles/{layer.id}/{{z}}/{{x}}/{{y}}.png"
     })

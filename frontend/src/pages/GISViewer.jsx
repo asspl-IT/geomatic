@@ -1,24 +1,30 @@
-import React, { useState } from "react";
-import FileUpload from "../components/FileUpload";
+import { useState } from "react";
+import ProjectList from "../components/ProjectList";
+import LayerList from "../components/LayerList";
 import MapView from "../components/MapView";
 
 export default function GISViewer() {
   const [project, setProject] = useState(null);
+  const [activeLayers, setActiveLayers] = useState([]);
+
+  const toggleLayer = (layer, on) => {
+    setActiveLayers(prev =>
+      on ? [...prev, layer] : prev.filter(l => l.id !== layer.id)
+    );
+  };
 
   return (
-    <div style={{ padding: "10px" }}>
-      <h2>GIS Viewer</h2>
+    <div style={{ display: "flex" }}>
+      <div style={{ width: 300, padding: 10, borderRight: "1px solid #ccc" }}>
+        <ProjectList onSelect={setProject} />
+        {project && (
+          <LayerList projectId={project.id} onToggle={toggleLayer} />
+        )}
+      </div>
 
-      <FileUpload
-        onLoaded={(data) => {
-          console.log("PROJECT DATA RECEIVED:", data);
-          setProject(data);
-        }}
-      />
-
-      {project && project.layers && project.layers.length > 0 && (
-        <MapView project={project} />
-      )}
+      <div style={{ flex: 1 }}>
+        <MapView activeLayers={activeLayers} />
+      </div>
     </div>
   );
 }
