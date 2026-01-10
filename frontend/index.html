@@ -1,13 +1,41 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>GIS Viewer</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <title>Potree Viewer</title>
+
+  <style>
+    html, body, #potree_container {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="potree_container"></div>
+
+  <script>
+    window.viewer = new Potree.Viewer(
+      document.getElementById("potree_container")
+    );
+
+    viewer.setEDLEnabled(true);
+    viewer.setFOV(60);
+    viewer.setPointBudget(2_000_000);
+    viewer.loadSettingsFromURL();
+
+    Potree.loadPointCloud(
+      "/media/potree_project_53_layer_37/pointclouds/index/metadata.json",
+      "LAS Layer",
+      e => {
+        const pointcloud = e.pointcloud;
+        viewer.scene.addPointCloud(pointcloud);
+        viewer.fitToScreen();
+      }
+    );
+  </script>
+</body>
 </html>

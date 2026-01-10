@@ -1,10 +1,11 @@
-import os
+import os, json
 import zipfile
 
 from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAdminUser, AllowAny
 from rest_framework.response import Response
+from myapp.services.crs_service import detect_table_crs
 
 from django.conf import settings
 from django.shortcuts import get_object_or_404
@@ -84,6 +85,7 @@ def admin_upload_project(request):
 
             if shp:
                 result = ingest_uploaded_file(shp, project)
+                crs = detect_table_crs(result["table_name"])
 
                 layer = Layer.objects.create(
                     project=project,
@@ -92,6 +94,8 @@ def admin_upload_project(request):
                     source_format="shp",
                     storage_type="postgis",
                     table_name=result["table_name"],
+                    crs=crs,
+                    original_crs=crs,
                     bbox=result["meta"].get("bbox"),
                     feature_count=result["meta"].get("feature_count"),
                 )
@@ -100,6 +104,7 @@ def admin_upload_project(request):
 
             elif jpg and jgw:
                 result = ingest_uploaded_file(jpg, project)
+                crs = detect_table_crs(result["table_name"])
 
                 layer = Layer.objects.create(
                     project=project,
@@ -121,6 +126,9 @@ def admin_upload_project(request):
         # ==================================================
         else:
             result = ingest_uploaded_file(file_path, project)
+            crs = None
+            if result["layer_type"] == "vector":
+                crs = detect_table_crs(result["table_name"])
 
             layer = Layer.objects.create(
                 project=project,
@@ -130,6 +138,8 @@ def admin_upload_project(request):
                 storage_type=result["storage_type"],
                 table_name=result.get("table_name"),
                 file_path=result.get("file_path"),
+                crs=crs if crs else "EPSG:4326",
+                original_crs=crs,
                 bbox=result["meta"].get("bbox"),
                 feature_count=result["meta"].get("feature_count"),
             )
@@ -169,7 +179,7 @@ def list_projects(request):
         {
             "id": p.id,
             "name": p.name,
-            "crs": p.crs,
+            "crs": p.crs or "EPSG:4326",
             "created_at": p.created_at,
         }
         for p in projects
@@ -189,10 +199,11 @@ def project_layers(request, project_id):
             "storage": l.storage_type,
             "feature_count": l.feature_count,
             "bbox": l.bbox,
+            "crs": l.crs or "EPSG:4326",
+            "original_crs": l.original_crs,
         }
         for l in layers
     ])
-
 
 @api_view(["GET"])
 @permission_classes([AllowAny])
@@ -202,11 +213,27 @@ def vector_layer_geojson(request, layer_id):
     if layer.layer_type != "vector":
         return api_error("Not a vector layer", 400)
 
-    geojson = fetch_geojson_from_table(
+    geojson_data = fetch_geojson_from_table(
         layer.table_name,
         limit=5000
     )
-    return Response(geojson)
+
+    if not geojson_data:
+        return api_error("No features found", 404)
+
+    # 🔑 NORMALIZE RESULT (STRING → DICT)
+    if isinstance(geojson_data, str):
+        geojson_data = json.loads(geojson_data)
+
+    # Attach CRS metadata
+    geojson_data["crs"] = {
+        "type": "name",
+        "properties": {
+            "name": layer.crs or "EPSG:4326"
+        }
+    }
+
+    return Response(geojson_data)
 
 
 @api_view(["GET"])
@@ -220,4 +247,17 @@ def raster_layer_info(request, layer_id):
     return Response({
         "type": "raster",
         "tile_url": f"/api/tiles/{layer.id}/{{z}}/{{x}}/{{y}}.png"
+    })
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def lidar_layer_info(request, layer_id):
+    layer = get_object_or_404(Layer, id=layer_id)
+
+    if layer.layer_type != "lidar":
+        return api_error("Not a lidar layer", 400)
+
+    return Response({
+        "type": "lidar",
+        "viewer_url": f"/media/potree/project_{layer.project_id}/layer_{layer.id}/index.html"
     })

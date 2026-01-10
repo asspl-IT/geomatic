@@ -34,5 +34,7 @@ class Layer(models.Model):
     storage_type = models.CharField(max_length=32)    
     table_name = models.CharField(max_length=255, null=True, blank=True)
     file_path = models.TextField(null=True, blank=True)
+    crs = models.CharField(max_length=32, default="EPSG:4326")   # ✅ ADD
+    original_crs = models.CharField(max_length=32, null=True, blank=True)
     bbox = models.JSONField(null=True, blank=True)
     feature_count = models.IntegerField(null=True, blank=True)

@@ -1,8 +1,9 @@
 import subprocess
 import os
+from django.conf import settings
 
-
-def ingest_raster(file_path, output_dir):
+def ingest_raster(file_path):
+    output_dir = os.path.dirname(file_path)
     cog_path = os.path.join(output_dir, "raster_cog.tif")
 
     cmd = [
@@ -14,4 +15,6 @@ def ingest_raster(file_path, output_dir):
 
     subprocess.check_call(cmd)
 
-    return cog_path
+    return cog_path, {
+        "bbox": None
+    }

@@ -1,16 +1,34 @@
-import laspy
+import os
+import subprocess
+from django.conf import settings
 
+POTREE_EXE = r"C:\PotreeConverter_windows_x64\PotreeConverter.exe"
 
-def ingest_lidar(file_path):
-    las = laspy.read(file_path)
+def ingest_lidar(file_path, project_id, layer_id):
+    """
+    Convert LAS/LAZ to Potree format
+    """
+
+    out_dir = os.path.join(
+        settings.MEDIA_ROOT,
+        "potree",
+        f"project_{project_id}",
+        f"layer_{layer_id}"
+    )
+
+    os.makedirs(out_dir, exist_ok=True)
+
+    cmd = [
+        POTREE_EXE,
+        file_path,
+        "-o", out_dir,
+        "--generate-page", "index",
+        "--encoding", "BROTLI"
+    ]
+
+    subprocess.check_call(cmd)
+
     return {
-        "points": las.header.point_count,
-        "bounds": {
-            "xmin": las.header.mins[0],
-            "ymin": las.header.mins[1],
-            "zmin": las.header.mins[2],
-            "xmax": las.header.maxs[0],
-            "ymax": las.header.maxs[1],
-            "zmax": las.header.maxs[2],
-        }
+        "viewer": "potree",
+        "file_path": out_dir
     }

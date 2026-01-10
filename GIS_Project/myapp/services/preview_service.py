@@ -3,10 +3,12 @@ import rasterio
 import laspy
 from django.db import connection
 
-
-def fetch_geojson_from_table(table_name, limit=500):
+def fetch_geojson_from_table(table_name, limit=5000):
     with connection.cursor() as cursor:
-        # detect geometry column safely
+
+        # --------------------------------------------------
+        # 1. Detect geometry column
+        # --------------------------------------------------
         cursor.execute("""
             SELECT f_geometry_column
             FROM geometry_columns
@@ -16,27 +18,59 @@ def fetch_geojson_from_table(table_name, limit=500):
 
         row = cursor.fetchone()
         if not row:
-            return None
+            raise ValueError("No geometry column found")
 
         geom_col = row[0]
 
+        # --------------------------------------------------
+        # 2. Detect SRID safely (PostGIS 3+ compliant)
+        # --------------------------------------------------
+        cursor.execute(f"""
+            SELECT ST_SRID({geom_col})
+            FROM "{table_name}"
+            WHERE {geom_col} IS NOT NULL
+            LIMIT 1
+        """)
+
+        srid_row = cursor.fetchone()
+        source_srid = srid_row[0] if srid_row and srid_row[0] else 4326
+
+        # --------------------------------------------------
+        # 3. Build GeoJSON (reproject only if needed)
+        # --------------------------------------------------
+        geom_expr = (
+            f"ST_Transform({geom_col}, 4326)"
+            if source_srid != 4326
+            else geom_col
+        )
+
         cursor.execute(f"""
             SELECT jsonb_build_object(
-                'type','FeatureCollection',
-                'features', jsonb_agg(f)
+                'type', 'FeatureCollection',
+                'crs', jsonb_build_object(
+                    'type', 'name',
+                    'properties', jsonb_build_object(
+                        'name', 'EPSG:4326'
+                    )
+                ),
+                'features', COALESCE(jsonb_agg(feature), '[]'::jsonb)
             )
             FROM (
                 SELECT jsonb_build_object(
-                    'type','Feature',
-                    'geometry', ST_AsGeoJSON({geom_col})::jsonb,
-                    'properties', to_jsonb(t) - '{geom_col}'
-                ) f
+                    'type', 'Feature',
+                    'geometry',
+                        ST_AsGeoJSON({geom_expr})::jsonb,
+                    'properties',
+                        to_jsonb(t) - '{geom_col}'
+                ) AS feature
                 FROM "{table_name}" t
-                LIMIT {limit}
-            ) q;
-        """)
+                WHERE {geom_col} IS NOT NULL
+                LIMIT %s
+            ) AS features;
+        """, [limit])
 
         return cursor.fetchone()[0]
+
 
 
 def raster_preview(file_path):

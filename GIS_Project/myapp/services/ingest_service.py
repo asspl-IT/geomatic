@@ -103,9 +103,8 @@ def ingest_uploaded_file(file_path, project):
     # LIDAR (LAS / LAZ)
     # ==================================================
     if ftype == "lidar":
-        meta = ingest_lidar(file_path)
 
-        Layer.objects.create(
+        layer=Layer.objects.create(
             project=project,
             name=name,
             layer_type="lidar",
@@ -113,6 +112,10 @@ def ingest_uploaded_file(file_path, project):
             storage_type="potree",
         )
 
+        meta = ingest_lidar(file_path=file_path, project_id=project.id, layer_id=layer.id)
+        layer.file_path = meta["file_path"]
+        layer.save()
+        
         return {
             "layer_type": "lidar",
             "storage_type": "potree",

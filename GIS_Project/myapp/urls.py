@@ -1,5 +1,6 @@
 from django.urls import path
-from .views import admin_upload_project, list_projects, project_layers, vector_layer_geojson, raster_layer_info
+from .views import admin_upload_project, list_projects, project_layers, vector_layer_geojson
+from .views import lidar_layer_info, raster_layer_info
 
 urlpatterns = [
     path("upload-project/", admin_upload_project),
@@ -7,6 +8,8 @@ urlpatterns = [
     path("api/projects/<int:project_id>/layers/", project_layers),
     path("api/layers/<int:layer_id>/geojson/", vector_layer_geojson),
     path("api/layers/<int:layer_id>/raster-info/", raster_layer_info),
+    path("api/layers/<int:layer_id>/lidar/", lidar_layer_info),
+
 ]
 
 

@@ -1,7 +1,22 @@
-db.sqlite3
-venv/
+# Python
 __pycache__/
 *.pyc
+*.pyo
+venv/
 .env
+
+# Django
+db.sqlite3
 media/
-*.whl
+
+# Node / Frontend
+node_modules/
+frontend/.vite/
+
+# Potree generated assets
+frontend/public/potree/build/
+frontend/public/potree/pointclouds/
+
+# OS
+.DS_Store
+Thumbs.db

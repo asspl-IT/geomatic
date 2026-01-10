@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import API from "../api";
 
-export default function LayerList({ projectId, onToggle }) {
+export default function LayerList({ projectId, onToggle, activeLayers }) {
   const [layers, setLayers] = useState([]);
 
   useEffect(() => {
@@ -17,11 +17,12 @@ export default function LayerList({ projectId, onToggle }) {
 
   return (
     <div>
-      <h4>Layers</h4>
+      <h4 style={{ marginTop: 10 }}>Layers</h4>
       {layers.map(l => (
         <div key={l.id}>
           <input
             type="checkbox"
+            checked={activeLayers.some(al => al.id === l.id)}
             onChange={(e) => onToggle(l, e.target.checked)}
           />
           {l.name} ({l.type})
